@@ -23,12 +23,6 @@ import static org.jhotdraw.draw.AttributeKeys.CANVAS_FILL_COLOR;
 import static org.jhotdraw.draw.AttributeKeys.CANVAS_FILL_OPACITY;
 import static org.jhotdraw.draw.AttributeKeys.CANVAS_HEIGHT;
 import static org.jhotdraw.draw.AttributeKeys.CANVAS_WIDTH;
-import static org.jhotdraw.draw.DrawingView.ACTIVE_HANDLE_PROPERTY;
-import static org.jhotdraw.draw.DrawingView.CONSTRAINER_VISIBLE_PROPERTY;
-import static org.jhotdraw.draw.DrawingView.DRAWING_PROPERTY;
-import static org.jhotdraw.draw.DrawingView.INVISIBLE_CONSTRAINER_PROPERTY;
-import static org.jhotdraw.draw.DrawingView.VISIBLE_CONSTRAINER_PROPERTY;
-
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -116,7 +110,9 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
   private JLabel emptyDrawingLabel;
   private boolean paintBackground = true;
   protected BufferedImage backgroundTile;
+  private boolean paintEnabled = true;
 
+  private final EventHandler eventHandler = new EventHandler();
   private final FigureListener handleInvalidator =
       new FigureListenerAdapter() {
         @Override
@@ -129,11 +125,7 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
     return paintBackground;
   }
 
-  public void setPaintBackground(boolean paintBackground) {
-    this.paintBackground = paintBackground;
-  }
 
-  private boolean paintEnabled = true;
 
   @Override
   public void repaintHandles() {
@@ -158,144 +150,11 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
     }
   }
 
-  protected void drawBackground(Graphics2D g) {
-    if (drawing == null) {
-      // there is no drawing and thus no canvas
-      g.setColor(getBackground());
-      g.fillRect(0, 0, getWidth(), getHeight());
-    } else if (drawing.attr().get(CANVAS_WIDTH) == null
-        || drawing.attr().get(CANVAS_HEIGHT) == null) {
-      // the canvas is infinitely large
-      Color canvasColor = drawing.attr().get(CANVAS_FILL_COLOR);
-      double canvasOpacity = drawing.attr().get(CANVAS_FILL_OPACITY);
-      if (canvasColor != null) {
-        if (canvasOpacity == 1) {
-          g.setColor(new Color(canvasColor.getRGB()));
-          g.fillRect(0, 0, getWidth(), getHeight());
-        } else {
-          Point r = drawingToView(new Point2D.Double(0, 0));
-          g.setPaint(getBackgroundPaint(r.x, r.y));
-          g.fillRect(0, 0, getWidth(), getHeight());
-          g.setColor(
-              new Color(
-                  canvasColor.getRGB() & 0xfffff | ((int) (canvasOpacity * 256) << 24), true));
-          g.fillRect(0, 0, getWidth(), getHeight());
-        }
-      } else {
-        Point r = drawingToView(new Point2D.Double(0, 0));
-        g.setPaint(getBackgroundPaint(r.x, r.y));
-        g.fillRect(0, 0, getWidth(), getHeight());
-      }
-    } else {
-      // the canvas has a fixed size
-      g.setColor(getBackground());
-      g.fillRect(0, 0, getWidth(), getHeight());
-      Rectangle r =
-          drawingToView(
-              new Rectangle2D.Double(
-                  0, 0, drawing.attr().get(CANVAS_WIDTH), drawing.attr().get(CANVAS_HEIGHT)));
-      g.setPaint(getBackgroundPaint(r.x, r.y));
-      g.fillRect(r.x, r.y, r.width, r.height);
-    }
-  }
-
   @Override
   public boolean isSelectionEmpty() {
     return SELECTED_FIGURES.isEmpty();
   }
 
-  protected class EventHandler implements DrawingListener, HandleListener, FocusListener {
-
-    @Override
-    public void figureAdded(DrawingEvent evt) {
-      if (drawing.getChildCount() == 1 && getEmptyDrawingMessage() != null) {
-        repaint();
-      } else {
-        repaintDrawingArea(
-            evt.getFigure()
-                .getDrawingArea(AttributeKeys.getScaleFactor(getDrawingToViewTransform())));
-      }
-    }
-
-    @Override
-    public void figureRemoved(DrawingEvent evt) {
-      if (drawing.getChildCount() == 0 && getEmptyDrawingMessage() != null) {
-        repaint();
-      } else {
-        repaintDrawingArea(
-            evt.getFigure()
-                .getDrawingArea(AttributeKeys.getScaleFactor(getDrawingToViewTransform())));
-      }
-      removeFromSelection(evt.getFigure());
-    }
-
-    @Override
-    public void areaInvalidated(HandleEvent evt) {
-      repaint(evt.getInvalidatedArea());
-    }
-
-    @Override
-    public void handleRequestSecondaryHandles(HandleEvent e) {
-      secondaryHandleOwner = e.getHandle();
-      secondaryHandles.clear();
-      secondaryHandles.addAll(secondaryHandleOwner.createSecondaryHandles());
-      for (Handle h : secondaryHandles) {
-        h.setView(AbstractDrawingView.this);
-        h.addHandleListener(eventHandler);
-      }
-      repaint();
-    }
-
-    @Override
-    public void focusGained(FocusEvent e) {
-      if (editor != null) {
-        editor.setActiveView(AbstractDrawingView.this);
-      }
-    }
-
-    @Override
-    public void focusLost(FocusEvent e) {}
-
-    @Override
-    public void handleRequestRemove(HandleEvent e) {
-      selectionHandles.remove(e.getHandle());
-      e.getHandle().dispose();
-      invalidateHandles();
-      repaint(e.getInvalidatedArea());
-    }
-
-    @Override
-    public void drawingAttributeChanged(DrawingEvent e) {
-      if (e.getSource() == drawing) {
-        AttributeKey<?> a = e.getAttribute();
-        if (a.equals(CANVAS_HEIGHT) || a.equals(CANVAS_WIDTH)) {
-          repaint();
-        }
-        if (e.getInvalidatedArea() != null) {
-          repaintDrawingArea(
-              e.getFigure()
-                  .getDrawingArea(AttributeKeys.getScaleFactor(getDrawingToViewTransform())));
-        } else {
-          repaintDrawingArea(viewToDrawing(getCanvasViewBounds()));
-        }
-      } else {
-        // this view should not invalidate its area from foreign drawings changes
-        //        if (e.getInvalidatedArea() != null) {
-        //          repaintDrawingArea(
-        //              e.getFigure()
-        //
-        // .getDrawingArea(AttributeKeys.getScaleFactor(getDrawingToViewTransform())));
-        //        }
-      }
-    }
-
-    @Override
-    public void drawingChanged(DrawingEvent e) {
-      repaintDrawingArea(e.getInvalidatedArea());
-    }
-  }
-
-  private final EventHandler eventHandler = new EventHandler();
 
   public AbstractDrawingView() {
     addFocusListener(eventHandler);
@@ -375,107 +234,6 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
     drawDrawing(g);
   }
 
-  protected void setViewRenderingHints(Graphics2D g) {
-    // Set rendering hints for speed
-    g.setRenderingHint(
-        RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-    g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE);
-    g.setRenderingHint(
-        RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-    g.setRenderingHint(
-        RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-    g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
-    g.setRenderingHint(
-        RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-  }
-
-  /**
-   * Returns the bounds of the canvas on the drawing view.
-   *
-   * @return The current bounds of the canvas on the drawing view.
-   */
-  protected Rectangle getCanvasViewBounds() {
-    // Position of the zero coordinate point on the view
-    int x = 0;
-    int y = 0;
-    int w = getWidth();
-    int h = getHeight();
-    if (getDrawing() != null) {
-      Double cw = getDrawing().attr().get(CANVAS_WIDTH);
-      Double ch = getDrawing().attr().get(CANVAS_HEIGHT);
-      if (cw != null && ch != null) {
-        Point lowerRight = drawingToView(new Point2D.Double(cw, ch));
-        w = lowerRight.x - x;
-        h = lowerRight.y - y;
-      }
-    }
-    return new Rectangle(x, y, w, h);
-  }
-
-  /**
-   * Draws the canvas. If the {@code AttributeKeys.CANVAS_FILL_OPACITY} is not fully opaque, the
-   * canvas area is filled with the background paint before the {@code
-   * AttributeKeys.CANVAS_FILL_COLOR} is drawn.
-   */
-  protected void drawCanvas(Graphics2D gr) {
-    if (drawing != null) {
-      Graphics2D g = (Graphics2D) gr.create();
-      AffineTransform tx = g.getTransform();
-      g.setTransform(tx);
-      drawing.setFontRenderContext(g.getFontRenderContext());
-      drawing.drawCanvas(g);
-      g.dispose();
-    }
-  }
-
-  protected void drawConstrainer(Graphics2D g) {
-    if (getConstrainer() != null) {
-      Shape clip = g.getClip();
-      Rectangle r = getCanvasViewBounds();
-      g.clipRect(r.x, r.y, r.width, r.height);
-      getConstrainer().draw(g, this);
-      g.setClip(clip);
-    }
-  }
-
-  protected void drawDrawing(Graphics2D gr) {
-    if (drawing != null) {
-      if (drawing.getChildCount() == 0 && emptyDrawingLabel != null) {
-        emptyDrawingLabel.setBounds(0, 0, getWidth(), getHeight());
-        emptyDrawingLabel.paint(gr);
-      } else {
-        Graphics2D g = (Graphics2D) gr.create();
-        AffineTransform tx = g.getTransform();
-        if (getDrawingToViewTransform() != null) {
-          tx.concatenate(getDrawingToViewTransform());
-        }
-        g.setTransform(tx);
-        drawing.setFontRenderContext(g.getFontRenderContext());
-        drawing.draw(g);
-        g.dispose();
-      }
-    }
-  }
-
-  protected void drawHandles(java.awt.Graphics2D g) {
-    if (editor != null && editor.getActiveView() == this) {
-      validateHandles();
-      for (Handle h : getSelectionHandles()) {
-        h.draw(g);
-      }
-      for (Handle h : getSecondaryHandles()) {
-        h.draw(g);
-      }
-    }
-  }
-
-  protected void drawTool(Graphics2D g) {
-    if (editor != null && editor.getActiveView() == this && editor.getTool() != null) {
-      editor.getTool().draw(g);
-    }
-  }
-
   @Override
   public void setDrawing(Drawing newValue) {
     Drawing oldValue = drawing;
@@ -492,23 +250,17 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
     revalidate();
     paintEnabled = false;
     javax.swing.Timer t =
-        new javax.swing.Timer(
-            10,
-            new ActionListener() {
-              @Override
-              public void actionPerformed(ActionEvent e) {
-                repaint();
-                paintEnabled = true;
-              }
-            });
+            new javax.swing.Timer(
+                    10,
+                    new ActionListener() {
+                      @Override
+                      public void actionPerformed(ActionEvent e) {
+                        repaint();
+                        paintEnabled = true;
+                      }
+                    });
     t.setRepeats(false);
     t.start();
-  }
-
-  protected void repaintDrawingArea(Rectangle2D.Double r) {
-    Rectangle vr = drawingToView(r);
-    vr.grow(2, 2);
-    repaint(vr);
   }
 
   /** Adds a figure to the current selection. */
@@ -643,85 +395,6 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
     return SELECTED_FIGURES.size();
   }
 
-  /** Gets the currently active selection handles. */
-  private List<Handle> getSelectionHandles() {
-    validateHandles();
-    return Collections.unmodifiableList(selectionHandles);
-  }
-
-  /** Gets the currently active secondary handles. */
-  private List<Handle> getSecondaryHandles() {
-    validateHandles();
-    return Collections.unmodifiableList(secondaryHandles);
-  }
-
-  /** Invalidates the handles. */
-  private void invalidateHandles() {
-    if (handlesAreValid) {
-      handlesAreValid = false;
-      Rectangle invalidatedArea = null;
-      for (Handle handle : selectionHandles) {
-        handle.removeHandleListener(eventHandler);
-        if (invalidatedArea == null) {
-          invalidatedArea = handle.getDrawingArea();
-        } else {
-          invalidatedArea.add(handle.getDrawingArea());
-        }
-        handle.dispose();
-      }
-      for (Handle handle : secondaryHandles) {
-        handle.removeHandleListener(eventHandler);
-        if (invalidatedArea == null) {
-          invalidatedArea = handle.getDrawingArea();
-        } else {
-          invalidatedArea.add(handle.getDrawingArea());
-        }
-        handle.dispose();
-      }
-      selectionHandles.clear();
-      secondaryHandles.clear();
-      setActiveHandle(null);
-      if (invalidatedArea != null) {
-        repaint(invalidatedArea);
-      }
-    }
-  }
-
-  /** Validates the handles. */
-  private void validateHandles() {
-    // Validate handles only, if they are invalid, and if
-    // the DrawingView has a DrawingEditor.
-    if (!handlesAreValid && getEditor() != null) {
-      handlesAreValid = true;
-      selectionHandles.clear();
-      Rectangle invalidatedArea = null;
-      while (true) {
-        for (Figure figure : getSelectedFigures()) {
-          for (Handle handle : figure.createHandles(detailLevel)) {
-            handle.setView(this);
-            selectionHandles.add(handle);
-            handle.addHandleListener(eventHandler);
-            if (invalidatedArea == null) {
-              invalidatedArea = handle.getDrawingArea();
-            } else {
-              invalidatedArea.add(handle.getDrawingArea());
-            }
-          }
-        }
-        if (selectionHandles.isEmpty() && detailLevel != 0) {
-          // No handles are available at the desired detail level.
-          // Retry with detail level 0.
-          detailLevel = 0;
-          continue;
-        }
-        break;
-      }
-      if (invalidatedArea != null) {
-        repaint(invalidatedArea);
-      }
-    }
-  }
-
   /**
    * Finds a handle at a given coordinates.
    *
@@ -794,39 +467,10 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
     listenerList.remove(FigureSelectionListener.class, fsl);
   }
 
-  /**
-   * Notify all listenerList that have registered interest for notification on this event type. Also
-   * notify listeners who listen for {@link EditableComponent#SELECTION_EMPTY_PROPERTY}.
-   */
-  protected void fireSelectionChanged(Set<Figure> oldValue, Set<Figure> newValue) {
-    if (listenerList.getListenerCount() > 0) {
-      FigureSelectionEvent event = null;
-      // Notify all listeners that have registered interest for
-      // Guaranteed to return a non-null array
-      Object[] listeners = listenerList.getListenerList();
-      // Process the listeners last to first, notifying
-      // those that are interested in this event
-      for (int i = listeners.length - 2; i >= 0; i -= 2) {
-        if (listeners[i] == FigureSelectionListener.class) {
-          // Lazily create the event:
-          if (event == null) {
-            event = new FigureSelectionEvent(this, oldValue, newValue);
-          }
-          ((FigureSelectionListener) listeners[i + 1]).selectionChanged(event);
-        }
-      }
-    }
-    firePropertyChange(
-        EditableComponent.SELECTION_EMPTY_PROPERTY, oldValue.isEmpty(), newValue.isEmpty());
-  }
 
   @Override
   public Constrainer getConstrainer() {
     return isConstrainerVisible() ? visibleConstrainer : invisibleConstrainer;
-  }
-
-  protected Rectangle2D.Double getDrawingArea() {
-    return (Rectangle2D.Double) drawing.getDrawingArea().clone();
   }
 
   /** Converts drawing coordinates to view coordinates. */
@@ -1046,26 +690,6 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
     return isConstrainerVisible;
   }
 
-  /**
-   * Returns a paint for drawing the background of the drawing area.
-   *
-   * @return Paint.
-   */
-  protected Paint getBackgroundPaint(int x, int y) {
-    if (backgroundTile == null) {
-      backgroundTile = new BufferedImage(16, 16, BufferedImage.TYPE_INT_RGB);
-      Graphics2D g = backgroundTile.createGraphics();
-      g.setColor(Color.white);
-      g.fillRect(0, 0, 16, 16);
-      g.setColor(new Color(0xdfdfdf));
-      g.fillRect(0, 0, 8, 8);
-      g.fillRect(8, 8, 8, 8);
-      g.dispose();
-    }
-    return new TexturePaint(
-        backgroundTile, new Rectangle(x, y, backgroundTile.getWidth(), backgroundTile.getHeight()));
-  }
-
   @Override
   public DrawingEditor getEditor() {
     return editor;
@@ -1082,10 +706,6 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
       repaint(newValue.getDrawingArea());
     }
     firePropertyChange(ACTIVE_HANDLE_PROPERTY, oldValue, newValue);
-  }
-
-  private void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-    propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
   }
 
   @Override
@@ -1118,4 +738,383 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
   public abstract int getHeight();
 
   public abstract void revalidate();
+
+
+  protected void drawBackground(Graphics2D g) {
+    if (drawing == null) {
+      // there is no drawing and thus no canvas
+      g.setColor(getBackground());
+      g.fillRect(0, 0, getWidth(), getHeight());
+    } else if (drawing.attr().get(CANVAS_WIDTH) == null
+            || drawing.attr().get(CANVAS_HEIGHT) == null) {
+      // the canvas is infinitely large
+      Color canvasColor = drawing.attr().get(CANVAS_FILL_COLOR);
+      double canvasOpacity = drawing.attr().get(CANVAS_FILL_OPACITY);
+      if (canvasColor != null) {
+        if (canvasOpacity == 1) {
+          g.setColor(new Color(canvasColor.getRGB()));
+          g.fillRect(0, 0, getWidth(), getHeight());
+        } else {
+          Point r = drawingToView(new Point2D.Double(0, 0));
+          g.setPaint(getBackgroundPaint(r.x, r.y));
+          g.fillRect(0, 0, getWidth(), getHeight());
+          g.setColor(
+                  new Color(
+                          canvasColor.getRGB() & 0xfffff | ((int) (canvasOpacity * 256) << 24), true));
+          g.fillRect(0, 0, getWidth(), getHeight());
+        }
+      } else {
+        Point r = drawingToView(new Point2D.Double(0, 0));
+        g.setPaint(getBackgroundPaint(r.x, r.y));
+        g.fillRect(0, 0, getWidth(), getHeight());
+      }
+    } else {
+      // the canvas has a fixed size
+      g.setColor(getBackground());
+      g.fillRect(0, 0, getWidth(), getHeight());
+      Rectangle r =
+              drawingToView(
+                      new Rectangle2D.Double(
+                              0, 0, drawing.attr().get(CANVAS_WIDTH), drawing.attr().get(CANVAS_HEIGHT)));
+      g.setPaint(getBackgroundPaint(r.x, r.y));
+      g.fillRect(r.x, r.y, r.width, r.height);
+    }
+  }
+
+
+  protected class EventHandler implements DrawingListener, HandleListener, FocusListener {
+
+    @Override
+    public void figureAdded(DrawingEvent evt) {
+      if (drawing.getChildCount() == 1 && getEmptyDrawingMessage() != null) {
+        repaint();
+      } else {
+        repaintDrawingArea(
+                evt.getFigure()
+                        .getDrawingArea(AttributeKeys.getScaleFactor(getDrawingToViewTransform())));
+      }
+    }
+
+    @Override
+    public void figureRemoved(DrawingEvent evt) {
+      if (drawing.getChildCount() == 0 && getEmptyDrawingMessage() != null) {
+        repaint();
+      } else {
+        repaintDrawingArea(
+                evt.getFigure()
+                        .getDrawingArea(AttributeKeys.getScaleFactor(getDrawingToViewTransform())));
+      }
+      removeFromSelection(evt.getFigure());
+    }
+
+    @Override
+    public void areaInvalidated(HandleEvent evt) {
+      repaint(evt.getInvalidatedArea());
+    }
+
+    @Override
+    public void handleRequestSecondaryHandles(HandleEvent e) {
+      secondaryHandleOwner = e.getHandle();
+      secondaryHandles.clear();
+      secondaryHandles.addAll(secondaryHandleOwner.createSecondaryHandles());
+      for (Handle h : secondaryHandles) {
+        h.setView(AbstractDrawingView.this);
+        h.addHandleListener(eventHandler);
+      }
+      repaint();
+    }
+
+    @Override
+    public void focusGained(FocusEvent e) {
+      if (editor != null) {
+        editor.setActiveView(AbstractDrawingView.this);
+      }
+    }
+
+    @Override
+    public void focusLost(FocusEvent e) {}
+
+    @Override
+    public void handleRequestRemove(HandleEvent e) {
+      selectionHandles.remove(e.getHandle());
+      e.getHandle().dispose();
+      invalidateHandles();
+      repaint(e.getInvalidatedArea());
+    }
+
+    @Override
+    public void drawingAttributeChanged(DrawingEvent e) {
+      if (e.getSource() == drawing) {
+        AttributeKey<?> a = e.getAttribute();
+        if (a.equals(CANVAS_HEIGHT) || a.equals(CANVAS_WIDTH)) {
+          repaint();
+        }
+        if (e.getInvalidatedArea() != null) {
+          repaintDrawingArea(
+                  e.getFigure()
+                          .getDrawingArea(AttributeKeys.getScaleFactor(getDrawingToViewTransform())));
+        } else {
+          repaintDrawingArea(viewToDrawing(getCanvasViewBounds()));
+        }
+      } else {
+        // this view should not invalidate its area from foreign drawings changes
+        //        if (e.getInvalidatedArea() != null) {
+        //          repaintDrawingArea(
+        //              e.getFigure()
+        //
+        // .getDrawingArea(AttributeKeys.getScaleFactor(getDrawingToViewTransform())));
+        //        }
+      }
+    }
+
+    @Override
+    public void drawingChanged(DrawingEvent e) {
+      repaintDrawingArea(e.getInvalidatedArea());
+    }
+  }
+
+
+  protected void setViewRenderingHints(Graphics2D g) {
+    // Set rendering hints for speed
+    g.setRenderingHint(
+            RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE);
+    g.setRenderingHint(
+            RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+    g.setRenderingHint(
+            RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+    g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
+    g.setRenderingHint(
+            RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+  }
+
+  /**
+   * Returns the bounds of the canvas on the drawing view.
+   *
+   * @return The current bounds of the canvas on the drawing view.
+   */
+  protected Rectangle getCanvasViewBounds() {
+    // Position of the zero coordinate point on the view
+    int x = 0;
+    int y = 0;
+    int w = getWidth();
+    int h = getHeight();
+    if (getDrawing() != null) {
+      Double cw = getDrawing().attr().get(CANVAS_WIDTH);
+      Double ch = getDrawing().attr().get(CANVAS_HEIGHT);
+      if (cw != null && ch != null) {
+        Point lowerRight = drawingToView(new Point2D.Double(cw, ch));
+        w = lowerRight.x - x;
+        h = lowerRight.y - y;
+      }
+    }
+    return new Rectangle(x, y, w, h);
+  }
+
+  /**
+   * Draws the canvas. If the {@code AttributeKeys.CANVAS_FILL_OPACITY} is not fully opaque, the
+   * canvas area is filled with the background paint before the {@code
+   * AttributeKeys.CANVAS_FILL_COLOR} is drawn.
+   */
+  protected void drawCanvas(Graphics2D gr) {
+    if (drawing != null) {
+      Graphics2D g = (Graphics2D) gr.create();
+      AffineTransform tx = g.getTransform();
+      g.setTransform(tx);
+      drawing.setFontRenderContext(g.getFontRenderContext());
+      drawing.drawCanvas(g);
+      g.dispose();
+    }
+  }
+
+  protected void drawConstrainer(Graphics2D g) {
+    if (getConstrainer() != null) {
+      Shape clip = g.getClip();
+      Rectangle r = getCanvasViewBounds();
+      g.clipRect(r.x, r.y, r.width, r.height);
+      getConstrainer().draw(g, this);
+      g.setClip(clip);
+    }
+  }
+
+  protected void drawDrawing(Graphics2D gr) {
+    if (drawing != null) {
+      if (drawing.getChildCount() == 0 && emptyDrawingLabel != null) {
+        emptyDrawingLabel.setBounds(0, 0, getWidth(), getHeight());
+        emptyDrawingLabel.paint(gr);
+      } else {
+        Graphics2D g = (Graphics2D) gr.create();
+        AffineTransform tx = g.getTransform();
+        if (getDrawingToViewTransform() != null) {
+          tx.concatenate(getDrawingToViewTransform());
+        }
+        g.setTransform(tx);
+        drawing.setFontRenderContext(g.getFontRenderContext());
+        drawing.draw(g);
+        g.dispose();
+      }
+    }
+  }
+
+  protected void drawHandles(java.awt.Graphics2D g) {
+    if (editor != null && editor.getActiveView() == this) {
+      validateHandles();
+      for (Handle h : getSelectionHandles()) {
+        h.draw(g);
+      }
+      for (Handle h : getSecondaryHandles()) {
+        h.draw(g);
+      }
+    }
+  }
+
+  protected void drawTool(Graphics2D g) {
+    if (editor != null && editor.getActiveView() == this && editor.getTool() != null) {
+      editor.getTool().draw(g);
+    }
+  }
+
+
+
+  protected void repaintDrawingArea(Rectangle2D.Double r) {
+    Rectangle vr = drawingToView(r);
+    vr.grow(2, 2);
+    repaint(vr);
+  }
+
+
+  /** Gets the currently active selection handles. */
+  private List<Handle> getSelectionHandles() {
+    validateHandles();
+    return Collections.unmodifiableList(selectionHandles);
+  }
+
+  /** Gets the currently active secondary handles. */
+  private List<Handle> getSecondaryHandles() {
+    validateHandles();
+    return Collections.unmodifiableList(secondaryHandles);
+  }
+
+  /** Invalidates the handles. */
+  private void invalidateHandles() {
+    if (handlesAreValid) {
+      handlesAreValid = false;
+      Rectangle invalidatedArea = null;
+      for (Handle handle : selectionHandles) {
+        handle.removeHandleListener(eventHandler);
+        if (invalidatedArea == null) {
+          invalidatedArea = handle.getDrawingArea();
+        } else {
+          invalidatedArea.add(handle.getDrawingArea());
+        }
+        handle.dispose();
+      }
+      for (Handle handle : secondaryHandles) {
+        handle.removeHandleListener(eventHandler);
+        if (invalidatedArea == null) {
+          invalidatedArea = handle.getDrawingArea();
+        } else {
+          invalidatedArea.add(handle.getDrawingArea());
+        }
+        handle.dispose();
+      }
+      selectionHandles.clear();
+      secondaryHandles.clear();
+      setActiveHandle(null);
+      if (invalidatedArea != null) {
+        repaint(invalidatedArea);
+      }
+    }
+  }
+
+  /** Validates the handles. */
+  private void validateHandles() {
+    // Validate handles only, if they are invalid, and if
+    // the DrawingView has a DrawingEditor.
+    if (!handlesAreValid && getEditor() != null) {
+      handlesAreValid = true;
+      selectionHandles.clear();
+      Rectangle invalidatedArea = null;
+      while (true) {
+        for (Figure figure : getSelectedFigures()) {
+          for (Handle handle : figure.createHandles(detailLevel)) {
+            handle.setView(this);
+            selectionHandles.add(handle);
+            handle.addHandleListener(eventHandler);
+            if (invalidatedArea == null) {
+              invalidatedArea = handle.getDrawingArea();
+            } else {
+              invalidatedArea.add(handle.getDrawingArea());
+            }
+          }
+        }
+        if (selectionHandles.isEmpty() && detailLevel != 0) {
+          // No handles are available at the desired detail level.
+          // Retry with detail level 0.
+          detailLevel = 0;
+          continue;
+        }
+        break;
+      }
+      if (invalidatedArea != null) {
+        repaint(invalidatedArea);
+      }
+    }
+  }
+
+
+  /**
+   * Notify all listenerList that have registered interest for notification on this event type. Also
+   * notify listeners who listen for {@link EditableComponent#SELECTION_EMPTY_PROPERTY}.
+   */
+  protected void fireSelectionChanged(Set<Figure> oldValue, Set<Figure> newValue) {
+    if (listenerList.getListenerCount() > 0) {
+      FigureSelectionEvent event = null;
+      // Notify all listeners that have registered interest for
+      // Guaranteed to return a non-null array
+      Object[] listeners = listenerList.getListenerList();
+      // Process the listeners last to first, notifying
+      // those that are interested in this event
+      for (int i = listeners.length - 2; i >= 0; i -= 2) {
+        if (listeners[i] == FigureSelectionListener.class) {
+          // Lazily create the event:
+          if (event == null) {
+            event = new FigureSelectionEvent(this, oldValue, newValue);
+          }
+          ((FigureSelectionListener) listeners[i + 1]).selectionChanged(event);
+        }
+      }
+    }
+    firePropertyChange(
+            EditableComponent.SELECTION_EMPTY_PROPERTY, oldValue.isEmpty(), newValue.isEmpty());
+  }
+
+  /**
+   * Returns a paint for drawing the background of the drawing area.
+   *
+   * @return Paint.
+   */
+  protected Paint getBackgroundPaint(int x, int y) {
+    if (backgroundTile == null) {
+      backgroundTile = new BufferedImage(16, 16, BufferedImage.TYPE_INT_RGB);
+      Graphics2D g = backgroundTile.createGraphics();
+      g.setColor(Color.white);
+      g.fillRect(0, 0, 16, 16);
+      g.setColor(new Color(0xdfdfdf));
+      g.fillRect(0, 0, 8, 8);
+      g.fillRect(8, 8, 8, 8);
+      g.dispose();
+    }
+    return new TexturePaint(
+            backgroundTile, new Rectangle(x, y, backgroundTile.getWidth(), backgroundTile.getHeight()));
+  }
+
+  protected Rectangle2D.Double getDrawingArea() {
+    return (Rectangle2D.Double) drawing.getDrawingArea().clone();
+  }
+
+  private void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+    propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
+  }
 }

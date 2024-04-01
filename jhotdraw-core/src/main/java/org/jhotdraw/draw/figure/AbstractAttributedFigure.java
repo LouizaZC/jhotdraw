@@ -63,6 +63,9 @@ public abstract class AbstractAttributedFigure implements Figure, Cloneable {
 
   private Attributes attributes = new Attributes(this::fireAttributeChanged);
 
+  public static final float STROKE_MITER_LIMIT_FACTOR = 10f;
+  public static final double ZERO_LITERAL_DOUBLE = 0d;
+
   @Override
   public Attributes attr() {
     return attributes;
@@ -80,7 +83,7 @@ public abstract class AbstractAttributedFigure implements Figure, Cloneable {
       g.setColor(attr().get(FILL_COLOR));
       drawFill(g);
     }
-    if (attr().get(STROKE_COLOR) != null && attr().get(STROKE_WIDTH) >= 0d) {
+    if (attr().get(STROKE_COLOR) != null && attr().get(STROKE_WIDTH) >= ZERO_LITERAL_DOUBLE) {
       g.setStroke(AttributeKeys.getStroke(this, AttributeKeys.getScaleFactorFromGraphics(g)));
       g.setColor(attr().get(STROKE_COLOR));
       drawStroke(g);
@@ -100,7 +103,7 @@ public abstract class AbstractAttributedFigure implements Figure, Cloneable {
 
   public double getStrokeMiterLimitFactor() {
     Number value = (Number) attr().get(AttributeKeys.STROKE_MITER_LIMIT);
-    return (value != null) ? value.doubleValue() : 10f;
+    return (value != null) ? value.doubleValue() : STROKE_MITER_LIMIT_FACTOR;
   }
 
   @Override

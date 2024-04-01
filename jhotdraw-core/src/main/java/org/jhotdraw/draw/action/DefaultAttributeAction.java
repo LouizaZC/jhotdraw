@@ -111,7 +111,7 @@ public class DefaultAttributeAction extends AbstractSelectedAction {
     fireUndoableEditHappened(edit);
   }
 
-  public void selectionChanged(FigureSelectionEvent evt) {
+  public void selectionChanged() {
     // setEnabled(getView().getSelectionCount() > 0);
   }
 }

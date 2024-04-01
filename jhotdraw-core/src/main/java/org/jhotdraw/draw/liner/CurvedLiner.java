@@ -60,9 +60,6 @@ public class CurvedLiner implements Liner {
         soutcode = Geom.outcode(sb, eb);
       }
       int eoutcode = eb.outcode(ep);
-      if (eoutcode == 0) {
-        eoutcode = Geom.outcode(sb, eb);
-      }
       path.nodes().get(0).moveTo(sp);
       path.nodes().get(path.size() - 1).moveTo(ep);
       switch (soutcode) {

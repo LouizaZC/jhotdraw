@@ -35,11 +35,6 @@ public class ChopEllipseConnector extends ChopRectangleConnector {
     return f.attr().get(STROKE_COLOR);
   }
 
-  private float getStrokeWidth(Figure f) {
-    Double w = f.attr().get(STROKE_WIDTH);
-    return (w == null) ? 1f : w.floatValue();
-  }
-
   @Override
   protected Point2D.Double chop(Figure target, Point2D.Double from) {
     target = getConnectorTarget(target);
