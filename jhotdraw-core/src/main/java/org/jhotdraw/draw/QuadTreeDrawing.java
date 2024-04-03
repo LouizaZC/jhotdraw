@@ -47,12 +47,15 @@ public class QuadTreeDrawing extends AbstractDrawing {
   }
 
   @Override
-  public Figure basicRemoveChild(int index) {
+  public void basicRemoveChild(int index) {
+    if (index < 0 || index >= CHILDREN.size()) {
+      throw new IndexOutOfBoundsException("Index out of bounds: " + index);
+    }
     Figure figure = getChild(index);
     quadTree.remove(figure);
     needsSorting = true;
     super.basicRemoveChild(index);
-    return figure;
+
   }
 
   @Override

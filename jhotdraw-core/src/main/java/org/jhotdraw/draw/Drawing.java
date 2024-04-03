@@ -179,10 +179,10 @@ public interface Drawing {
    * Removes a figure from the drawing. The drawing sends a {@code removeNotify} message to the
    * figure before it is removed.
    *
-   * @see Figure#removeNotify
    * @param figure that is part of the drawing and should be removed
+   * @see Figure#removeNotify
    */
-  boolean remove(Figure figure);
+  void remove(Figure figure);
 
   /**
    * Removes the specified figures from the drawing. The drawing sends a {@code removeNotify}

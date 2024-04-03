@@ -79,6 +79,9 @@ public abstract class AbstractDrawing implements Drawing {
 
   @Override
   public void addInputFormat(InputFormat format) {
+    if (inputFormats.contains(format)) {
+      throw new IllegalArgumentException("Format is already exist");
+    }
     inputFormats.add(format);
   }
 
@@ -272,15 +275,14 @@ public abstract class AbstractDrawing implements Drawing {
   }
 
   @Override
-  public boolean remove(Figure figure) {
+  public void remove(Figure figure) {
     int index = CHILDREN.indexOf(figure);
     if (index == -1) {
-      return false;
+      throw new IllegalArgumentException("Figure not found in the drawing");
     } else {
       basicRemoveChild(index);
       figure.removeNotify(this);
       fireFigureRemoved(figure, index);
-      return true;
     }
   }
 
@@ -334,11 +336,14 @@ public abstract class AbstractDrawing implements Drawing {
     return index;
   }
 
-  protected Figure basicRemoveChild(int index) {
+  protected void basicRemoveChild(int index) {
+    if (index < 0 || index >= CHILDREN.size()) {
+      throw new IndexOutOfBoundsException("Index out of bounds: " + index);
+    }
     Figure figure = CHILDREN.remove(index);
     figure.removeFigureListener(eventHandler);
     invalidate();
-    return figure;
+
   }
 
   protected EventHandler createEventHandler() {
