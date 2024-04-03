@@ -142,43 +142,47 @@ public abstract class AbstractDrawing implements Drawing {
     changingDepth--;
   }
 
-  @Override
   @SuppressWarnings("unchecked")
+  @Override
   public AbstractDrawing clone() {
-    AbstractDrawing that;
     try {
-      that = (AbstractDrawing) super.clone();
+      AbstractDrawing that = createCloneInstance();
+      cloneAttributes(that);
+      cloneListeners(that);
+      cloneInputFormats(that);
+      cloneOutputFormats(that);
+      return that;
     } catch (CloneNotSupportedException ex) {
       throw new InternalError("clone failed", ex);
     }
+  }
+  private AbstractDrawing createCloneInstance() throws CloneNotSupportedException {
+    return (AbstractDrawing) super.clone();
+  }
+  private void cloneAttributes(AbstractDrawing that) {
     that.attributes = Attributes.from(attributes, that::fireDrawingAttributeChanged);
+  }
+  private void cloneListeners(AbstractDrawing that) {
     that.listenerList = new EventListenerList();
-
+  }
+  private void cloneInputFormats(AbstractDrawing that) {
     that.inputFormats = (this.inputFormats == null) ? null : new ArrayList<>(this.inputFormats);
+  }
+  private void cloneOutputFormats(AbstractDrawing that) {
     that.outputFormats = (this.outputFormats == null) ? null : new ArrayList<>(this.outputFormats);
-    return that;
   }
 
-  /** Notify all listenerList that have registered interest for notification on this event type. */
+  /** Notify all listeners that have registered interest for notification on this event type. */
   @Override
   public void fireUndoableEditHappened(UndoableEdit edit) {
-    UndoableEditEvent event = null;
     if (listenerList.getListenerCount() > 0) {
-      // Notify all listeners that have registered interest for
-      // Guaranteed to return a non-null array
-      Object[] listeners = listenerList.getListenerList();
-      // Process the listeners last to first, notifying
-      // those that are interested in this event
-      for (int i = listeners.length - 2; i >= 0; i -= 2) {
-        if (event == null) {
-          event = new UndoableEditEvent(this, edit);
-        }
-        if (listeners[i] == UndoableEditListener.class) {
-          ((UndoableEditListener) listeners[i + 1]).undoableEditHappened(event);
-        }
+      UndoableEditEvent event = new UndoableEditEvent(this, edit);
+      for (UndoableEditListener listener : listenerList.getListeners(UndoableEditListener.class)) {
+        listener.undoableEditHappened(event);
       }
     }
   }
+
 
   @Override
   public Figure getChild(int index) {
@@ -202,25 +206,34 @@ public abstract class AbstractDrawing implements Drawing {
 
   @Override
   public Rectangle2D.Double getDrawingArea(double factor) {
-    if (cachedDrawingArea == null) {
-      if (getChildCount() == 0) {
-        cachedDrawingArea = new Rectangle2D.Double();
+    if (cachedDrawingArea != null) {
+      return new Rectangle2D.Double(
+              cachedDrawingArea.x,
+              cachedDrawingArea.y,
+              cachedDrawingArea.width,
+              cachedDrawingArea.height);
+    }
+    Rectangle2D.Double totalDrawingArea = new Rectangle2D.Double();
+    for (Figure f : CHILDREN) {
+      Rectangle2D.Double childArea = f.getDrawingArea(factor);
+      if (totalDrawingArea.isEmpty()) {
+        totalDrawingArea.setRect(childArea);
       } else {
-        for (Figure f : CHILDREN) {
-          if (cachedDrawingArea == null) {
-            cachedDrawingArea = f.getDrawingArea(factor);
-          } else {
-            cachedDrawingArea.add(f.getDrawingArea(factor));
-          }
-        }
+        totalDrawingArea.add(childArea);
       }
     }
+    cachedDrawingArea = new Rectangle2D.Double(
+            totalDrawingArea.x,
+            totalDrawingArea.y,
+            totalDrawingArea.width,
+            totalDrawingArea.height);
     return new Rectangle2D.Double(
-        cachedDrawingArea.x,
-        cachedDrawingArea.y,
-        cachedDrawingArea.width,
-        cachedDrawingArea.height);
+            cachedDrawingArea.x,
+            cachedDrawingArea.y,
+            cachedDrawingArea.width,
+            cachedDrawingArea.height);
   }
+
 
   @Override
   public FontRenderContext getFontRenderContext() {
@@ -346,16 +359,19 @@ public abstract class AbstractDrawing implements Drawing {
   }
 
   protected void fireDrawingEvent(
-      BiConsumer<DrawingListener, DrawingEvent> listenerConsumer,
-      Supplier<DrawingEvent> eventSupplier) {
-    DrawingEvent event = null;
+          BiConsumer<DrawingListener, DrawingEvent> listenerConsumer,
+          Supplier<DrawingEvent> eventSupplier) {
     if (listenerList.getListenerCount() == 0) {
       return;
     }
+    DrawingEvent event = eventSupplier.get();
+    fireDrawingEventToListeners(listenerConsumer, event);
+  }
+
+  private void fireDrawingEventToListeners(
+          BiConsumer<DrawingListener, DrawingEvent> listenerConsumer,
+          DrawingEvent event) {
     for (DrawingListener listener : listenerList.getListeners(DrawingListener.class)) {
-      if (event == null) {
-        event = eventSupplier.get();
-      }
       listenerConsumer.accept(listener, event);
     }
   }
