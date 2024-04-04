@@ -178,33 +178,29 @@ public class QuadTreeDrawing extends AbstractDrawing {
   public Figure findFigureBehind(Point2D.Double p, Figure figure) {
     boolean isBehind = false;
     for (Figure f : getFiguresFrontToBack()) {
-      if (isBehind) {
-        if (f.isVisible() && f.contains(p)) {
-          return f;
-        }
-      } else {
-        isBehind = figure == f;
+      if (isBehind && f.isVisible() && f.contains(p)) {
+        return f;
       }
+      isBehind = (figure == f);
     }
     return null;
   }
+
 
   @Override
   public Figure findFigureBehind(Point2D.Double p, Collection<? extends Figure> children) {
     int inFrontOf = children.size();
     for (Figure f : getFiguresFrontToBack()) {
-      if (inFrontOf == 0) {
-        if (f.isVisible() && f.contains(p)) {
-          return f;
-        }
-      } else {
-        if (children.contains(f)) {
-          inFrontOf--;
-        }
+      if (inFrontOf == 0 && f.isVisible() && f.contains(p)) {
+        return f;
+      }
+      if (children.contains(f)) {
+        inFrontOf--;
       }
     }
     return null;
   }
+
 
   @Override
   public List<Figure> findFigures(Rectangle2D.Double r) {
