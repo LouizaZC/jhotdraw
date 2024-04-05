@@ -131,5 +131,4 @@ public class LocatorLayouter implements Layouter {
   public List<Figure> extractFiguresToLayout(CompositeFigure compositeFigure) {
     return compositeFigure.getChildren();
   }
-
 }

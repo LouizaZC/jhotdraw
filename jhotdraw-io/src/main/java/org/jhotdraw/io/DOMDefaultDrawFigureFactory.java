@@ -25,20 +25,7 @@ import org.jhotdraw.draw.connector.ChopTriangleConnector;
 import org.jhotdraw.draw.connector.Connector;
 import org.jhotdraw.draw.connector.LocatorConnector;
 import org.jhotdraw.draw.decoration.ArrowTip;
-import org.jhotdraw.draw.figure.BezierFigure;
-import org.jhotdraw.draw.figure.DecoratedFigure;
-import org.jhotdraw.draw.figure.DiamondFigure;
-import org.jhotdraw.draw.figure.EllipseFigure;
-import org.jhotdraw.draw.figure.Figure;
-import org.jhotdraw.draw.figure.GroupFigure;
-import org.jhotdraw.draw.figure.ImageFigure;
-import org.jhotdraw.draw.figure.LineConnectionFigure;
-import org.jhotdraw.draw.figure.LineFigure;
-import org.jhotdraw.draw.figure.RectangleFigure;
-import org.jhotdraw.draw.figure.RoundRectangleFigure;
-import org.jhotdraw.draw.figure.TextAreaFigure;
-import org.jhotdraw.draw.figure.TextFigure;
-import org.jhotdraw.draw.figure.TriangleFigure;
+import org.jhotdraw.draw.figure.*;
 import org.jhotdraw.draw.liner.CurvedLiner;
 import org.jhotdraw.draw.liner.ElbowLiner;
 import org.jhotdraw.draw.liner.Liner;
@@ -423,7 +410,7 @@ public class DOMDefaultDrawFigureFactory extends DefaultDOMFactory {
     }
   }
 
-  public static void writeText(TextFigure figure, DOMOutput domOutput) throws IOException {
+  public static void writeText(TextFigureEdit figure, DOMOutput domOutput) throws IOException {
     // Rectangle2D.Double b = figure.getBounds();
     Point2D.Double b = figure.getOrigin();
     domOutput.addAttribute("x", b.x);

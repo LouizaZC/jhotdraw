@@ -70,7 +70,6 @@ public class TextAreaEditingTool extends AbstractTool implements ActionListener 
     }
   }
 
-
   protected void beginEdit(TextHolderFigure textHolder) {
     if (textArea == null) {
       textArea = new FloatingText();

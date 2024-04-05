@@ -112,7 +112,7 @@ public abstract class AbstractAttributedFigure implements Figure, Cloneable {
   }
 
   @Override
-  public final Rectangle2D.Double getBounds() {
+  public Rectangle2D.Double getBounds() {
     return getBounds(AttributeKeys.scaleFromContext(this));
   }
 

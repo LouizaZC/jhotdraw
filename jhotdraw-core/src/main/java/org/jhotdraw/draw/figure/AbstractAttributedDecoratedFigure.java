@@ -97,11 +97,11 @@ public abstract class AbstractAttributedDecoratedFigure extends AbstractAttribut
   protected abstract boolean figureContains(Point2D.Double p, double scaleDenominator);
 
   @Override
-  public AbstractAttributedDecoratedFigure clone() {
+  public TextFigure clone() {
     AbstractAttributedDecoratedFigure that = (AbstractAttributedDecoratedFigure) super.clone();
     if (this.decorator != null) {
       that.decorator = this.decorator.clone();
     }
-    return that;
+    return (TextFigure) that;
   }
 }

@@ -207,12 +207,6 @@ public class ImageFigure extends AbstractAttributedDecoratedFigure implements Im
 
   // COMPOSITE FIGURES
   // CLONING
-  @Override
-  public ImageFigure clone() {
-    ImageFigure that = (ImageFigure) super.clone();
-    that.rectangle = (Rectangle2D.Double) this.rectangle.clone();
-    return that;
-  }
 
   /**
    * Sets the image.

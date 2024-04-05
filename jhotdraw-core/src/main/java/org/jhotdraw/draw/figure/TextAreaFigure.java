@@ -435,13 +435,6 @@ public class TextAreaFigure extends AbstractAttributedDecoratedFigure implements
   // CONNECTING
   // COMPOSITE FIGURES
   // CLONING
-  @Override
-  public TextAreaFigure clone() {
-    TextAreaFigure that = (TextAreaFigure) super.clone();
-    that.bounds = (Rectangle2D.Double) this.bounds.clone();
-    return that;
-  }
-
   // EVENT HANDLING
   @Override
   public Collection<Handle> createHandles(int detailLevel) {

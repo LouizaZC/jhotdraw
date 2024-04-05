@@ -45,6 +45,9 @@ public class LabelFigure extends TextFigure {
     return (target == null) ? this : target;
   }
 
+  @Override
+  public void setFontSize(float size) {}
+
   /**
    * Returns a specialized tool for the given coordinate.
    *
@@ -67,7 +70,6 @@ public class LabelFigure extends TextFigure {
             target = null;
           }
         }
-
       };
 
   @Override
