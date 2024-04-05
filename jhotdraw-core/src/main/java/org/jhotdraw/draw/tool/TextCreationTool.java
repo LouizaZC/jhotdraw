@@ -40,8 +40,8 @@ import org.jhotdraw.util.ResourceBundleUtil;
  * the contracts of a smaller framework inside of the JHotDraw framework for structured drawing
  * editors.<br>
  * Contract: {@link TextHolderFigure}, {@link TextCreationTool}, {@link TextAreaCreationTool},
- * {@link TextEditingTool}, {@link TextAreaEditingTool}, {@link FloatingTextField}, {@link
- * FloatingTextArea}.
+ * {@link TextEditingTool}, {@link TextAreaEditingTool}, {@link FloatingText}, {@link
+ * FloatingText}.
  *
  * <p><em>Prototype</em><br>
  * The text creation tools create new figures by cloning a prototype {@code TextHolderFigure}
@@ -52,7 +52,7 @@ import org.jhotdraw.util.ResourceBundleUtil;
 public class TextCreationTool extends CreationTool implements ActionListener {
 
   private static final long serialVersionUID = 1L;
-  private FloatingTextField textField;
+  private FloatingText textField;
   private TextHolderFigure typingTarget;
 
   public TextCreationTool(TextHolderFigure prototype) {
@@ -97,7 +97,7 @@ public class TextCreationTool extends CreationTool implements ActionListener {
 
   protected void beginEdit(TextHolderFigure textHolder) {
     if (textField == null) {
-      textField = new FloatingTextField();
+      textField = new FloatingText();
       textField.addActionListener(this);
     }
     if (textHolder != typingTarget && typingTarget != null) {
