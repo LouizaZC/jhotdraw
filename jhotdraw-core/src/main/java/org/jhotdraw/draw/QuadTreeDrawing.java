@@ -220,20 +220,25 @@ public class QuadTreeDrawing extends AbstractDrawing {
     List<Figure> contained = new ArrayList<>();
     double scale = AttributeKeys.scaleFromContext(this);
     for (Figure f : CHILDREN) {
-      Rectangle2D.Double r = f.getBounds(scale);
-      if (f.attr().get(TRANSFORM) != null) {
-        Rectangle2D rt = f.attr().get(TRANSFORM).createTransformedShape(r).getBounds2D();
-        r =
-            (rt instanceof Rectangle2D.Double)
-                ? (Rectangle2D.Double) rt
-                : new Rectangle2D.Double(rt.getX(), rt.getY(), rt.getWidth(), rt.getHeight());
-      }
-      if (f.isVisible() && Geom.contains(bounds, r)) {
+      Rectangle2D.Double r = getTransformedBounds(f, scale);
+      if (f.isVisible() && bounds.contains(r)) {
         contained.add(f);
       }
     }
     return contained;
   }
+
+  private Rectangle2D.Double getTransformedBounds(Figure f, double scale) {
+    Rectangle2D.Double r = f.getBounds(scale);
+    if (f.attr().get(TRANSFORM) != null) {
+      Rectangle2D rt = f.attr().get(TRANSFORM).createTransformedShape(r).getBounds2D();
+      r = (rt instanceof Rectangle2D.Double)
+              ? (Rectangle2D.Double) rt
+              : new Rectangle2D.Double(rt.getX(), rt.getY(), rt.getWidth(), rt.getHeight());
+    }
+    return r;
+  }
+
 
   @Override
   public void bringToFront(Figure figure) {

@@ -18,14 +18,15 @@
  */
 package org.jhotdraw.draw.figure;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+
+import org.jhotdraw.draw.DefaultDrawing;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author tw
@@ -50,6 +51,56 @@ public class AbstractFigureTest {
     figure.changed();
     assertEquals(figure.getChangingDepth(), 0);
   }
+  @Test
+  public void testChangeFigureOrder() {
+
+    DefaultDrawing drawing = new DefaultDrawing();
+
+    Figure figure1 = new AbstractFigureImpl();
+    Figure figure2 = new AbstractFigureImpl();
+
+    drawing.add(figure1);
+    drawing.add(figure2);
+
+    drawing.remove(figure1);
+
+    assertSame(drawing.getChild(0), figure2);
+
+  }
+
+  @Test
+  public void testRemoveSecondFigure() {
+    DefaultDrawing drawing = new DefaultDrawing();
+
+    Figure figure1 = new AbstractFigureImpl();
+    Figure figure2 = new AbstractFigureImpl();
+
+    drawing.add(figure1);
+    drawing.add(figure2);
+
+    drawing.remove(figure2);
+
+    assertSame(drawing.getChild(0), figure1);
+  }
+
+  @Test
+  public void testClone() {
+
+    AbstractAttributedFigure figure = new AbstractFigureImpl();
+    AbstractAttributedFigure clonedFigure = figure.clone();
+
+    assertNotSame(figure, clonedFigure);
+    assertEquals(figure.attr(), clonedFigure.attr());
+
+    assertEquals(figure.isSelectable(), clonedFigure.isSelectable());
+    assertEquals(figure.isRemovable(), clonedFigure.isRemovable());
+    assertEquals(figure.isVisible(), clonedFigure.isVisible());
+    assertEquals(figure.isTransformable(), clonedFigure.isTransformable());
+    assertEquals(figure.isConnectable(), clonedFigure.isConnectable());
+
+  }
+
+
 
   public class AbstractFigureImpl extends AbstractAttributedFigure {
 

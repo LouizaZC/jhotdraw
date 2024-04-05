@@ -154,7 +154,7 @@ public class DefaultSelectAreaTracker extends AbstractTool implements SelectArea
     }
   }
 
-  private void selectGroup() {
+  private void selectGroup(boolean shiftDown) {
     Collection<Figure> figures = getView().findFiguresWithin(rubberband);
     for (Figure f : figures) {
       if (f.isSelectable()) {
