@@ -15,7 +15,7 @@ import javax.swing.undo.UndoableEdit;
 import org.jhotdraw.draw.*;
 import org.jhotdraw.draw.figure.Figure;
 import org.jhotdraw.draw.figure.TextHolderFigure;
-import org.jhotdraw.draw.text.*;
+import org.jhotdraw.draw.liner.FloatingText;
 import org.jhotdraw.util.ResourceBundleUtil;
 
 /**
