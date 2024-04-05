@@ -23,6 +23,7 @@ import static org.jhotdraw.draw.AttributeKeys.CANVAS_FILL_COLOR;
 import static org.jhotdraw.draw.AttributeKeys.CANVAS_FILL_OPACITY;
 import static org.jhotdraw.draw.AttributeKeys.CANVAS_HEIGHT;
 import static org.jhotdraw.draw.AttributeKeys.CANVAS_WIDTH;
+
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -125,8 +126,6 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
     return paintBackground;
   }
 
-
-
   @Override
   public void repaintHandles() {
     validateHandles();
@@ -154,7 +153,6 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
   public boolean isSelectionEmpty() {
     return SELECTED_FIGURES.isEmpty();
   }
-
 
   public AbstractDrawingView() {
     addFocusListener(eventHandler);
@@ -250,15 +248,15 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
     revalidate();
     paintEnabled = false;
     javax.swing.Timer t =
-            new javax.swing.Timer(
-                    10,
-                    new ActionListener() {
-                      @Override
-                      public void actionPerformed(ActionEvent e) {
-                        repaint();
-                        paintEnabled = true;
-                      }
-                    });
+        new javax.swing.Timer(
+            10,
+            new ActionListener() {
+              @Override
+              public void actionPerformed(ActionEvent e) {
+                repaint();
+                paintEnabled = true;
+              }
+            });
     t.setRepeats(false);
     t.start();
   }
@@ -466,7 +464,6 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
   public void removeFigureSelectionListener(FigureSelectionListener fsl) {
     listenerList.remove(FigureSelectionListener.class, fsl);
   }
-
 
   @Override
   public Constrainer getConstrainer() {
@@ -739,14 +736,13 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
 
   public abstract void revalidate();
 
-
   protected void drawBackground(Graphics2D g) {
     if (drawing == null) {
       // there is no drawing and thus no canvas
       g.setColor(getBackground());
       g.fillRect(0, 0, getWidth(), getHeight());
     } else if (drawing.attr().get(CANVAS_WIDTH) == null
-            || drawing.attr().get(CANVAS_HEIGHT) == null) {
+        || drawing.attr().get(CANVAS_HEIGHT) == null) {
       // the canvas is infinitely large
       Color canvasColor = drawing.attr().get(CANVAS_FILL_COLOR);
       double canvasOpacity = drawing.attr().get(CANVAS_FILL_OPACITY);
@@ -759,8 +755,8 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
           g.setPaint(getBackgroundPaint(r.x, r.y));
           g.fillRect(0, 0, getWidth(), getHeight());
           g.setColor(
-                  new Color(
-                          canvasColor.getRGB() & 0xfffff | ((int) (canvasOpacity * 256) << 24), true));
+              new Color(
+                  canvasColor.getRGB() & 0xfffff | ((int) (canvasOpacity * 256) << 24), true));
           g.fillRect(0, 0, getWidth(), getHeight());
         }
       } else {
@@ -773,14 +769,13 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
       g.setColor(getBackground());
       g.fillRect(0, 0, getWidth(), getHeight());
       Rectangle r =
-              drawingToView(
-                      new Rectangle2D.Double(
-                              0, 0, drawing.attr().get(CANVAS_WIDTH), drawing.attr().get(CANVAS_HEIGHT)));
+          drawingToView(
+              new Rectangle2D.Double(
+                  0, 0, drawing.attr().get(CANVAS_WIDTH), drawing.attr().get(CANVAS_HEIGHT)));
       g.setPaint(getBackgroundPaint(r.x, r.y));
       g.fillRect(r.x, r.y, r.width, r.height);
     }
   }
-
 
   protected class EventHandler implements DrawingListener, HandleListener, FocusListener {
 
@@ -790,8 +785,8 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
         repaint();
       } else {
         repaintDrawingArea(
-                evt.getFigure()
-                        .getDrawingArea(AttributeKeys.getScaleFactor(getDrawingToViewTransform())));
+            evt.getFigure()
+                .getDrawingArea(AttributeKeys.getScaleFactor(getDrawingToViewTransform())));
       }
     }
 
@@ -801,8 +796,8 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
         repaint();
       } else {
         repaintDrawingArea(
-                evt.getFigure()
-                        .getDrawingArea(AttributeKeys.getScaleFactor(getDrawingToViewTransform())));
+            evt.getFigure()
+                .getDrawingArea(AttributeKeys.getScaleFactor(getDrawingToViewTransform())));
       }
       removeFromSelection(evt.getFigure());
     }
@@ -851,8 +846,8 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
         }
         if (e.getInvalidatedArea() != null) {
           repaintDrawingArea(
-                  e.getFigure()
-                          .getDrawingArea(AttributeKeys.getScaleFactor(getDrawingToViewTransform())));
+              e.getFigure()
+                  .getDrawingArea(AttributeKeys.getScaleFactor(getDrawingToViewTransform())));
         } else {
           repaintDrawingArea(viewToDrawing(getCanvasViewBounds()));
         }
@@ -873,20 +868,19 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
     }
   }
 
-
   protected void setViewRenderingHints(Graphics2D g) {
     // Set rendering hints for speed
     g.setRenderingHint(
-            RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+        RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
     g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE);
     g.setRenderingHint(
-            RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
     g.setRenderingHint(
-            RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
     g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
     g.setRenderingHint(
-            RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
   }
 
   /**
@@ -975,14 +969,11 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
     }
   }
 
-
-
   protected void repaintDrawingArea(Rectangle2D.Double r) {
     Rectangle vr = drawingToView(r);
     vr.grow(2, 2);
     repaint(vr);
   }
-
 
   /** Gets the currently active selection handles. */
   private List<Handle> getSelectionHandles() {
@@ -1063,7 +1054,6 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
     }
   }
 
-
   /**
    * Notify all listenerList that have registered interest for notification on this event type. Also
    * notify listeners who listen for {@link EditableComponent#SELECTION_EMPTY_PROPERTY}.
@@ -1087,7 +1077,7 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
       }
     }
     firePropertyChange(
-            EditableComponent.SELECTION_EMPTY_PROPERTY, oldValue.isEmpty(), newValue.isEmpty());
+        EditableComponent.SELECTION_EMPTY_PROPERTY, oldValue.isEmpty(), newValue.isEmpty());
   }
 
   /**
@@ -1107,7 +1097,7 @@ public abstract class AbstractDrawingView implements DrawingView, EditableCompon
       g.dispose();
     }
     return new TexturePaint(
-            backgroundTile, new Rectangle(x, y, backgroundTile.getWidth(), backgroundTile.getHeight()));
+        backgroundTile, new Rectangle(x, y, backgroundTile.getWidth(), backgroundTile.getHeight()));
   }
 
   protected Rectangle2D.Double getDrawingArea() {

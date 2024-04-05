@@ -11,7 +11,6 @@ import java.beans.*;
 import java.util.*;
 import javax.swing.*;
 import org.jhotdraw.draw.*;
-import org.jhotdraw.draw.event.FigureSelectionEvent;
 import org.jhotdraw.draw.figure.Figure;
 import org.jhotdraw.undo.CompositeEdit;
 import org.jhotdraw.util.ResourceBundleUtil;

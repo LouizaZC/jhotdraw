@@ -7,6 +7,7 @@
  */
 package org.jhotdraw.draw;
 
+import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
@@ -29,6 +30,9 @@ import org.jhotdraw.draw.figure.Attributes;
 import org.jhotdraw.draw.figure.Figure;
 import org.jhotdraw.draw.io.InputFormat;
 import org.jhotdraw.draw.io.OutputFormat;
+
+import static org.jhotdraw.draw.AttributeKeys.*;
+import static org.jhotdraw.draw.AttributeKeys.CANVAS_HEIGHT;
 
 public abstract class AbstractDrawing implements Drawing {
 
@@ -159,18 +163,23 @@ public abstract class AbstractDrawing implements Drawing {
       throw new InternalError("clone failed", ex);
     }
   }
+
   private AbstractDrawing createCloneInstance() throws CloneNotSupportedException {
     return (AbstractDrawing) super.clone();
   }
+
   private void cloneAttributes(AbstractDrawing that) {
     that.attributes = Attributes.from(attributes, that::fireDrawingAttributeChanged);
   }
+
   private void cloneListeners(AbstractDrawing that) {
     that.listenerList = new EventListenerList();
   }
+
   private void cloneInputFormats(AbstractDrawing that) {
     that.inputFormats = (this.inputFormats == null) ? null : new ArrayList<>(this.inputFormats);
   }
+
   private void cloneOutputFormats(AbstractDrawing that) {
     that.outputFormats = (this.outputFormats == null) ? null : new ArrayList<>(this.outputFormats);
   }
@@ -185,7 +194,6 @@ public abstract class AbstractDrawing implements Drawing {
       }
     }
   }
-
 
   @Override
   public Figure getChild(int index) {
@@ -211,10 +219,10 @@ public abstract class AbstractDrawing implements Drawing {
   public Rectangle2D.Double getDrawingArea(double factor) {
     if (cachedDrawingArea != null) {
       return new Rectangle2D.Double(
-              cachedDrawingArea.x,
-              cachedDrawingArea.y,
-              cachedDrawingArea.width,
-              cachedDrawingArea.height);
+          cachedDrawingArea.x,
+          cachedDrawingArea.y,
+          cachedDrawingArea.width,
+          cachedDrawingArea.height);
     }
     Rectangle2D.Double totalDrawingArea = new Rectangle2D.Double();
     for (Figure f : CHILDREN) {
@@ -225,18 +233,18 @@ public abstract class AbstractDrawing implements Drawing {
         totalDrawingArea.add(childArea);
       }
     }
-    cachedDrawingArea = new Rectangle2D.Double(
+    cachedDrawingArea =
+        new Rectangle2D.Double(
             totalDrawingArea.x,
             totalDrawingArea.y,
             totalDrawingArea.width,
             totalDrawingArea.height);
     return new Rectangle2D.Double(
-            cachedDrawingArea.x,
-            cachedDrawingArea.y,
-            cachedDrawingArea.width,
-            cachedDrawingArea.height);
+        cachedDrawingArea.x,
+        cachedDrawingArea.y,
+        cachedDrawingArea.width,
+        cachedDrawingArea.height);
   }
-
 
   @Override
   public FontRenderContext getFontRenderContext() {
@@ -343,7 +351,6 @@ public abstract class AbstractDrawing implements Drawing {
     Figure figure = CHILDREN.remove(index);
     figure.removeFigureListener(eventHandler);
     invalidate();
-
   }
 
   protected EventHandler createEventHandler() {
@@ -364,8 +371,8 @@ public abstract class AbstractDrawing implements Drawing {
   }
 
   protected void fireDrawingEvent(
-          BiConsumer<DrawingListener, DrawingEvent> listenerConsumer,
-          Supplier<DrawingEvent> eventSupplier) {
+      BiConsumer<DrawingListener, DrawingEvent> listenerConsumer,
+      Supplier<DrawingEvent> eventSupplier) {
     if (listenerList.getListenerCount() == 0) {
       return;
     }
@@ -374,8 +381,7 @@ public abstract class AbstractDrawing implements Drawing {
   }
 
   private void fireDrawingEventToListeners(
-          BiConsumer<DrawingListener, DrawingEvent> listenerConsumer,
-          DrawingEvent event) {
+      BiConsumer<DrawingListener, DrawingEvent> listenerConsumer, DrawingEvent event) {
     for (DrawingListener listener : listenerList.getListeners(DrawingListener.class)) {
       listenerConsumer.accept(listener, event);
     }
@@ -465,6 +471,24 @@ public abstract class AbstractDrawing implements Drawing {
     @Override
     public void figureRemoved(FigureEvent e) {
       invalidate();
+    }
+  }
+
+  @Override
+  public void drawCanvas(Graphics2D g) {
+    if (attr().get(CANVAS_WIDTH) != null && attr().get(CANVAS_HEIGHT) != null) {
+      // Determine canvas color and opacity
+      Color canvasColor = attr().get(CANVAS_FILL_COLOR);
+      Double fillOpacity = attr().get(CANVAS_FILL_OPACITY);
+      if (canvasColor != null && fillOpacity > 0) {
+        canvasColor =
+                new Color((canvasColor.getRGB() & 0xffffff) | ((int) (fillOpacity * 255) << 24), true);
+        // Fill the canvas
+        Rectangle2D.Double r =
+                new Rectangle2D.Double(0, 0, attr().get(CANVAS_WIDTH), attr().get(CANVAS_HEIGHT));
+        g.setColor(canvasColor);
+        g.fill(r);
+      }
     }
   }
 }

@@ -59,44 +59,44 @@ public class LineFigure extends BezierFigure {
   // EVENT HANDLING
 
   /** Handles a mouse click. */
-   @Override
-    public boolean handleMouseClick(Point2D.Double p, MouseEvent evt, DrawingView view) {
-      if (evt.getClickCount() == 2 && view.getHandleDetailLevel() == 0) {
-        return handleDoubleClick(p, view);
-      }
-      return false;
+  @Override
+  public boolean handleMouseClick(Point2D.Double p, MouseEvent evt, DrawingView view) {
+    if (evt.getClickCount() == 2 && view.getHandleDetailLevel() == 0) {
+      return handleDoubleClick(p, view);
     }
-
-    private boolean handleDoubleClick(Point2D.Double p, DrawingView view) {
-      int index = splitSegment(p, (float) (5f / view.getScaleFactor()));
-      if (index != -1) {
-        BezierPath.Node newNode = getNode(index);
-        applyNode(index, newNode);
-        return true;
-      }
-      return false;
-    }
-
-    private void applyNode(int index, BezierPath.Node newNode) {
-      willChange();
-      fireUndoableEditHappened(new AbstractUndoableEdit() {
-        @Override
-        public void redo() throws CannotRedoException {
-          super.redo();
-          willChange();
-          addNode(index, newNode);
-          changed();
-        }
-        @Override
-        public void undo() throws CannotUndoException {
-          super.undo();
-          willChange();
-          removeNode(index);
-          changed();
-        }
-      }
-      );
-      changed();
-    }
+    return false;
   }
 
+  private boolean handleDoubleClick(Point2D.Double p, DrawingView view) {
+    int index = splitSegment(p, (float) (5f / view.getScaleFactor()));
+    if (index != -1) {
+      BezierPath.Node newNode = getNode(index);
+      applyNode(index, newNode);
+      return true;
+    }
+    return false;
+  }
+
+  private void applyNode(int index, BezierPath.Node newNode) {
+    willChange();
+    fireUndoableEditHappened(
+        new AbstractUndoableEdit() {
+          @Override
+          public void redo() throws CannotRedoException {
+            super.redo();
+            willChange();
+            addNode(index, newNode);
+            changed();
+          }
+
+          @Override
+          public void undo() throws CannotUndoException {
+            super.undo();
+            willChange();
+            removeNode(index);
+            changed();
+          }
+        });
+    changed();
+  }
+}
