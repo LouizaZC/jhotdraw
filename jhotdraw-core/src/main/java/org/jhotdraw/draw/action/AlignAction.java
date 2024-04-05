@@ -63,6 +63,7 @@ public abstract class AlignAction extends AbstractSelectedAction {
     return bounds;
   }
 
+
   public static class North extends AlignAction {
 
     private static final long serialVersionUID = 1L;

@@ -132,18 +132,4 @@ public class LocatorLayouter implements Layouter {
     return compositeFigure.getChildren();
   }
 
-  /** Layout main element is first child. Other childs are layouted. */
-  public static class LocatorLayouterFirstFigure extends LocatorLayouter {
-
-    @Override
-    public List<Figure> extractFiguresToLayout(CompositeFigure compositeFigure) {
-      List<Figure> figures = compositeFigure.getChildren();
-      return figures.subList(1, figures.size());
-    }
-
-    @Override
-    public Figure extractBaseFigure(CompositeFigure compositeFigure) {
-      return compositeFigure.getChildren().get(0);
-    }
-  }
 }
