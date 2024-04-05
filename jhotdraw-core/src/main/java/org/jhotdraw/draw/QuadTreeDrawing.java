@@ -9,7 +9,6 @@ package org.jhotdraw.draw;
 
 import static org.jhotdraw.draw.AttributeKeys.*;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -84,11 +83,6 @@ public class QuadTreeDrawing extends AbstractDrawing {
 
   public List<Figure> getChildren(Rectangle2D.Double bounds) {
     return new ArrayList<>(quadTree.findInside(bounds));
-  }
-
-  @Override
-  public List<Figure> getChildren() {
-    return UNMODIFIABLE_CHILDREN;
   }
 
   @Override
@@ -322,5 +316,4 @@ public class QuadTreeDrawing extends AbstractDrawing {
       }
     }
   }
-
 }

@@ -40,8 +40,7 @@ import org.jhotdraw.util.ResourceBundleUtil;
  * the contracts of a smaller framework inside of the JHotDraw framework for structured drawing
  * editors.<br>
  * Contract: {@link TextHolderFigure}, {@link TextCreationTool}, {@link TextAreaCreationTool},
- * {@link TextEditingTool}, {@link TextAreaEditingTool}, {@link FloatingText}, {@link
- * FloatingText}.
+ * {@link TextEditingTool}, {@link TextAreaEditingTool}, {@link FloatingText}, {@link FloatingText}.
  *
  * <p><em>Prototype</em><br>
  * The text creation tools create new figures by cloning a prototype {@code TextHolderFigure}

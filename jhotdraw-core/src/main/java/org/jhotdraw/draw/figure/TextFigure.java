@@ -72,10 +72,7 @@ public class TextFigure extends AbstractAttributedDecoratedFigure
   // DRAWING
   @Override
   protected void drawStroke(java.awt.Graphics2D g) {}
-
-  @Override
-  protected void drawFill(java.awt.Graphics2D g) {}
-
+  
   @Override
   protected void drawText(java.awt.Graphics2D g) {
     if (getText() != null || isEditable()) {

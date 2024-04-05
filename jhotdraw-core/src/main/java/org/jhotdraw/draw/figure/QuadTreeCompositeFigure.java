@@ -36,10 +36,6 @@ public abstract class QuadTreeCompositeFigure extends AbstractAttributedComposit
 
   public QuadTreeCompositeFigure() {}
 
-  @Override
-  public int indexOf(Figure figure) {
-    return children.indexOf(figure);
-  }
 
   @Override
   public void basicAdd(int index, Figure figure) {
@@ -93,10 +89,6 @@ public abstract class QuadTreeCompositeFigure extends AbstractAttributedComposit
   //    return new ArrayList<>(quadTree.findInside(bounds));
   //  }
 
-  @Override
-  public java.util.List<Figure> getChildren() {
-    return Collections.unmodifiableList(children);
-  }
 
   @Override
   public Figure findFigureInside(Point2D.Double p) {
@@ -242,11 +234,6 @@ public abstract class QuadTreeCompositeFigure extends AbstractAttributedComposit
       needsSorting = true;
       fireAreaInvalidated(figure.getDrawingArea());
     }
-  }
-
-  @Override
-  public boolean contains(Figure f) {
-    return children.contains(f);
   }
 
   /** Ensures that the children are sorted in z-order sequence. */

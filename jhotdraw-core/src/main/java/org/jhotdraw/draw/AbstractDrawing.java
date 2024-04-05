@@ -7,6 +7,9 @@
  */
 package org.jhotdraw.draw;
 
+import static org.jhotdraw.draw.AttributeKeys.*;
+import static org.jhotdraw.draw.AttributeKeys.CANVAS_HEIGHT;
+
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
@@ -30,9 +33,6 @@ import org.jhotdraw.draw.figure.Attributes;
 import org.jhotdraw.draw.figure.Figure;
 import org.jhotdraw.draw.io.InputFormat;
 import org.jhotdraw.draw.io.OutputFormat;
-
-import static org.jhotdraw.draw.AttributeKeys.*;
-import static org.jhotdraw.draw.AttributeKeys.CANVAS_HEIGHT;
 
 public abstract class AbstractDrawing implements Drawing {
 
@@ -482,10 +482,10 @@ public abstract class AbstractDrawing implements Drawing {
       Double fillOpacity = attr().get(CANVAS_FILL_OPACITY);
       if (canvasColor != null && fillOpacity > 0) {
         canvasColor =
-                new Color((canvasColor.getRGB() & 0xffffff) | ((int) (fillOpacity * 255) << 24), true);
+            new Color((canvasColor.getRGB() & 0xffffff) | ((int) (fillOpacity * 255) << 24), true);
         // Fill the canvas
         Rectangle2D.Double r =
-                new Rectangle2D.Double(0, 0, attr().get(CANVAS_WIDTH), attr().get(CANVAS_HEIGHT));
+            new Rectangle2D.Double(0, 0, attr().get(CANVAS_WIDTH), attr().get(CANVAS_HEIGHT));
         g.setColor(canvasColor);
         g.fill(r);
       }

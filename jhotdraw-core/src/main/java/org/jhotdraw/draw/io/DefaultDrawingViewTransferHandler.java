@@ -405,8 +405,7 @@ public class DefaultDrawingViewTransferHandler extends TransferHandler {
         // view.clearSelection();
         DrawingListener removeListener =
             new DrawingListenerAdapter() {
-              @Override
-              public void figureAdded(DrawingEvent e) {}
+
 
               @Override
               public void figureRemoved(DrawingEvent evt) {

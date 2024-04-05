@@ -9,7 +9,6 @@ package org.jhotdraw.draw;
 
 import static org.jhotdraw.draw.AttributeKeys.*;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -249,6 +248,4 @@ public class DefaultDrawing extends AbstractDrawing {
   public int indexOf(Figure figure) {
     return CHILDREN.indexOf(figure);
   }
-
-
 }

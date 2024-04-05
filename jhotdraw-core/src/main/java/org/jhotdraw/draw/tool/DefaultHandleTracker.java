@@ -186,9 +186,6 @@ public class DefaultHandleTracker extends AbstractTool implements HandleTracker 
   }
 
   @Override
-  public void mouseEntered(MouseEvent evt) {}
-
-  @Override
   public void mouseExited(MouseEvent evt) {
     DrawingView view = editor.findView((Container) evt.getSource());
     updateHoverHandles(view, null);

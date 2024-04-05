@@ -38,8 +38,8 @@ import org.jhotdraw.util.ResourceBundleUtil;
  * the contracts of a smaller framework inside of the JHotDraw framework for structured drawing
  * editors.<br>
  * Contract: {@link TextHolderFigure}, {@link TextCreationTool}, {@link TextAreaCreationTool},
- * {@link TextEditingTool}, {@link TextAreaEditingTool}, {@link FloatingText}, {@link
- * FloatingText}. <hr>
+ * {@link TextEditingTool}, {@link TextAreaEditingTool}, {@link FloatingText}, {@link FloatingText}.
+ * <hr>
  *
  * @see TextHolderFigure
  * @see FloatingText
@@ -71,8 +71,6 @@ public class TextAreaEditingTool extends AbstractTool implements ActionListener 
     }
   }
 
-  @Override
-  public void draw(Graphics2D g) {}
 
   protected void beginEdit(TextHolderFigure textHolder) {
     if (textArea == null) {

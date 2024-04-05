@@ -68,8 +68,6 @@ public class LabelFigure extends TextFigure {
           }
         }
 
-        @Override
-        public void figureRequestRemove(FigureEvent e) {}
       };
 
   @Override
